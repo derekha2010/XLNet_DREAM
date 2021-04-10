@@ -19,4 +19,20 @@ Result: 72.0 (SOTA as of July 2019, [leaderboard](https://dataset.org/dream/))
 
 Note: My codes are built upon huggingface's implementation of [pytorch_transformers](https://github.com/huggingface/pytorch-transformers), and the original XLNet paper is: [(Yang et al., 2019)](https://arxiv.org/pdf/1906.08237.pdf).
 
+More build info:
+Pull this:
+git clone https://github.com/derekha2010/XLNet_DREAM
 
+Dream datasets:
+git clone https://github.com/nlpdata/dream
+cp dream/data XLNet_DREAM
+
+Install apex in windows:
+git clone https://github.com/kezewang/apex
+cd apex
+modify setup.py (104) to version_dependent_macros = version_ge_1_1 + version_ge_1_3 + version_ge_1_5 + ['-D_ENABLE_EXTENDED_ALIGNED_STORAGE']
+set USE_NINJA=OFF
+pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" .
+
+Other package:
+pip install sentencepiece
