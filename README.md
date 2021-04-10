@@ -20,6 +20,7 @@ Result: 72.0 (SOTA as of July 2019, [leaderboard](https://dataset.org/dream/))
 Note: My codes are built upon huggingface's implementation of [pytorch_transformers](https://github.com/huggingface/pytorch-transformers), and the original XLNet paper is: [(Yang et al., 2019)](https://arxiv.org/pdf/1906.08237.pdf).
 
 More build info:
+```
 Pull this:
 git clone https://github.com/derekha2010/XLNet_DREAM
 
@@ -36,3 +37,4 @@ pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cud
 
 Other package:
 pip install sentencepiece
+```
