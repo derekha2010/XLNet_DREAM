@@ -37,4 +37,5 @@ pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cud
 
 Other package:
 pip install sentencepiece
+pip install boto3
 ```
