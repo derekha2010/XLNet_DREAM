@@ -146,6 +146,7 @@ class PretrainedConfig(object):
                 to_remove.append(key)
         for key in to_remove:
             kwargs.pop(key, None)
+        setattr(config, 'n_token', config.__dict__['vocab_size'])
 
         logger.info("Model config %s", config)
         return config
