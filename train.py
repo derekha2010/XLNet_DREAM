@@ -5,6 +5,7 @@ from transformers.optimization import AdamW, get_linear_schedule_with_warmup
 from transformers.data.processors.utils import DataProcessor, InputFeatures
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
 
+import os
 import torch
 import random
 import json
@@ -276,6 +277,8 @@ def main():
     if n_gpu > 0:
         torch.cuda.manual_seed_all(random_seed)
 
+    os.makedirs(args.output_dir, exist_ok=True)
+    
     model = XLNetForMultipleChoice.from_pretrained('xlnet-base-cased')
     model.to(device)
     no_decay = ['bias', 'LayerNorm.weight']
@@ -426,7 +429,7 @@ def main():
         for key in sorted(result.keys()):
             logger.info("  %s = %s", key, str(result[key]))
         model_to_save = model.module if hasattr(model, 'module') else model  # Only save the model it-self
-        output_model_file = os.path.join(args.output_dir, "pytorch_model_{}epoch.bin".format(ep+1))
+        output_model_file = os.path.join(output_dir, "pytorch_model_{}epoch.bin".format(ep+1))
         torch.save(model_to_save.state_dict(), output_model_file)
         
 if __name__ == "__main__":
