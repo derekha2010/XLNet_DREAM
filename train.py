@@ -277,7 +277,7 @@ def main():
     if n_gpu > 0:
         torch.cuda.manual_seed_all(random_seed)
 
-    os.makedirs(args.output_dir, exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
     
     model = XLNetForMultipleChoice.from_pretrained('xlnet-base-cased')
     model.to(device)
