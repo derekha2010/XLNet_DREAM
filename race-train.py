@@ -127,7 +127,7 @@ def main():
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=num_warmup_steps, num_training_steps=num_train_steps)
     
     logger.info("***** Running training *****")
-    logger.info("  Num examples = %d", len(train_examples))
+    logger.info("  Num examples = %d", len(train_dataloader))
     logger.info("  Batch size = %d", train_batch_size)
     logger.info("  Num steps = %d", num_train_steps)
     
@@ -162,7 +162,10 @@ def main():
         eval_data = load_and_cache_examples('data/race', 'race', tokenizer, evaluate=True)
         eval_sampler = SequentialSampler(eval_data)
         eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=eval_batch_size)
-
+        
+        logger.info("***** Running Dev Evaluation *****")
+        logger.info("  Num examples = %d", len(eval_dataloader))
+        logger.info("  Batch size = %d", eval_batch_size)
         model.eval()
         eval_loss, eval_accuracy = 0, 0
         nb_eval_steps, nb_eval_examples = 0, 0
