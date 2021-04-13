@@ -130,7 +130,6 @@ def main():
         logger.info("  %s = %s", key, str(result[key]))
         output_eval_file = os.path.join(output_dir, "results.txt")
     with open(output_eval_file, "a+") as writer:
-        writer.write(" Epoch: "+str(ep+1))
         for key in sorted(result.keys()):
             writer.write("%s = %s\n" % (key, str(result[key])))
 if __name__ == "__main__":
