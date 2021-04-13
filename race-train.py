@@ -20,10 +20,10 @@ logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(messa
 logger = logging.getLogger(__name__)
 
 train_batch_size = 1
-gradient_accumulation_steps = 32
+gradient_accumulation_steps = 1
 num_train_epochs = 1
 num_warmup_steps = 120
-max_seq_length = 256
+max_seq_length = 512
 eval_batch_size = 1
 learning_rate = 1e-5
 random_seed = 42
@@ -43,6 +43,54 @@ def select_field(features, field):
         ]
         for feature in features
     ]
+
+def load_and_cache_examples(data_dir, task, tokenizer, evaluate=False, test=False):
+    processor = processors[task]()
+    # Load data features from cache or dataset file
+    if evaluate:
+        cached_mode = 'dev'
+    elif test:
+        cached_mode = 'test'
+    else:
+        cached_mode = 'train'
+    assert (evaluate == True and test == True) == False
+    cached_features_file = os.path.join(data_dir, 'cached_{}_{}_{}_{}'.format(
+        cached_mode,
+        list(filter(None, output_dir.split('/'))).pop(),
+        str(max_seq_length),
+        str(task)))
+    if os.path.exists(cached_features_file):
+        logger.info("Loading features from cached file %s", cached_features_file)
+        features = torch.load(cached_features_file)
+    else:
+        logger.info("Creating features from dataset file at %s", data_dir)
+        label_list = processor.get_labels()
+        if evaluate:
+            examples = processor.get_dev_examples(data_dir)
+        elif test:
+            examples = processor.get_test_examples(data_dir)
+        else:
+            examples = processor.get_train_examples(data_dir)
+        logger.info("Training number: %s", str(len(examples)))
+        features = convert_examples_to_features(
+            examples,
+            label_list,
+            max_seq_length,
+            tokenizer,
+            pad_on_left=True,  # pad on the left for xlnet
+            pad_token_segment_id=4
+        )
+        logger.info("Saving features into cached file %s", cached_features_file)
+        torch.save(features, cached_features_file)
+    
+    # Convert to Tensors and build dataset
+    all_input_ids = torch.tensor(select_field(features, 'input_ids'), dtype=torch.long)
+    all_input_mask = torch.tensor(select_field(features, 'input_mask'), dtype=torch.long)
+    all_segment_ids = torch.tensor(select_field(features, 'segment_ids'), dtype=torch.long)
+    all_label_ids = torch.tensor([f.label for f in features], dtype=torch.long)
+    
+    dataset = TensorDataset(all_input_ids, all_input_mask, all_segment_ids, all_label_ids)
+    return dataset
     
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -66,32 +114,7 @@ def main():
         {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
         ]
 
-    tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
-    processor = processors['race']()
-    label_list = processor.get_labels()
-    train_examples = processor.get_train_examples('data/race')
-    num_train_steps = int(
-                len(train_examples) // gradient_accumulation_steps * num_train_epochs)
-    
-    optimizer = AdamW(optimizer_grouped_parameters,
-                        lr=learning_rate,
-                        eps=1e-6)
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=num_warmup_steps, num_training_steps=num_train_steps)
-    train_features = convert_examples_to_features(
-            train_examples,
-            label_list,
-            max_seq_length,
-            tokenizer,
-            pad_on_left=True,  # pad on the left for xlnet
-            pad_token_segment_id=4
-        )
-
-    all_input_ids = torch.tensor(select_field(train_features, 'input_ids'), dtype=torch.long)
-    all_input_mask = torch.tensor(select_field(train_features, 'input_mask'), dtype=torch.long)
-    all_segment_ids = torch.tensor(select_field(train_features, 'segment_ids'), dtype=torch.long)
-    all_label_ids = torch.tensor([f.label for f in train_features], dtype=torch.long)
-    
-    train_data = TensorDataset(all_input_ids, all_input_mask, all_segment_ids, all_label_ids)
+    train_data = load_and_cache_examples('data/race', 'race', tokenizer)
     train_sampler = RandomSampler(train_data)
     train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=train_batch_size)
         
@@ -126,26 +149,8 @@ def main():
 
             if step%800 == 0:
                 logger.info("Training loss: {}, global step: {}".format(tr_loss/nb_tr_steps, global_step))
-
-        eval_examples = processor.get_dev_examples('data/race')
-        eval_features = convert_examples_to_features(
-            eval_examples,
-            label_list,
-            max_seq_length,
-            tokenizer,
-            pad_on_left=True,  # pad on the left for xlnet
-            pad_token_segment_id=4
-        )
-        logger.info("***** Running Dev Evaluation *****")
-        logger.info("  Num examples = %d", len(eval_examples))
-        logger.info("  Batch size = %d", eval_batch_size)
-
-        all_input_ids = torch.tensor(select_field(eval_features, 'input_ids'), dtype=torch.long)
-        all_input_mask = torch.tensor(select_field(eval_features, 'input_mask'), dtype=torch.long)
-        all_segment_ids = torch.tensor(select_field(eval_features, 'segment_ids'), dtype=torch.long)
-        all_label_ids = torch.tensor([f.label for f in eval_features], dtype=torch.long)
-        
-        eval_data = TensorDataset(all_input_ids, all_input_mask, all_segment_ids, all_label_ids)
+                
+        eval_data = load_and_cache_examples('data/race', 'race', tokenizer)
         eval_sampler = SequentialSampler(eval_data)
         eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=eval_batch_size)
 
