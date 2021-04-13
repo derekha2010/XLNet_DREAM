@@ -26,7 +26,7 @@ eval_batch_size = 1
 learning_rate = 1e-5
 random_seed = 42
 
-data_path='data/MCTest'
+data_path='datasets/MCTest'
 output_dir='model-mc160'
 output_model_file = 'pretrained/mctest160.bin'
 

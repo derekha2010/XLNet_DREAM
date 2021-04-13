@@ -28,7 +28,7 @@ learning_rate = 1e-5
 random_seed = 42
 
 output_dir='model-dream'
-output_model_file = 'pretrained/dream_xlnet-large-cased_256_71.bin'
+output_model_file = 'trained/dream_xlnet-large-cased_len256_72.bin'
 
 def accuracy(out, labels):
     outputs = np.argmax(out, axis=1)
@@ -53,7 +53,8 @@ def main():
     torch.manual_seed(random_seed)
     if n_gpu > 0:
         torch.cuda.manual_seed_all(random_seed)
-
+    os.makedirs(output_dir, exist_ok=True)
+    
     model_state_dict = torch.load(output_model_file, map_location=device)
     model = XLNetForMultipleChoice.from_pretrained('xlnet-large-cased', state_dict=model_state_dict)
     logger.info("Trained model: {} loaded.".format(output_model_file))
