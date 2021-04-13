@@ -4,6 +4,7 @@ from transformers import XLNetTokenizer, XLNetForMultipleChoice
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
 from utils_multiple_choice import (convert_examples_to_features, processors)
 
+import os
 import torch
 import random
 import json

@@ -26,8 +26,8 @@ eval_batch_size = 1
 learning_rate = 1e-5
 random_seed = 42
 
-output_dir='model-mc160'
-output_model_file = 'model-mc160/pytorch_model_3epoch.bin'
+data_path='data/MCTest'
+output_model_file = 'pretrained/mctest160.bin'
 
 def accuracy(out, labels):
     outputs = np.argmax(out, axis=1)
@@ -108,7 +108,7 @@ def main():
     model.to(device)
     tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
     
-    eval_data = load_and_cache_examples('data/MCTest', 'mc160', tokenizer, test=True)
+    eval_data = load_and_cache_examples(data_path, 'mc160', tokenizer, test=True)
     eval_sampler = SequentialSampler(eval_data)
     eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=eval_batch_size)
     

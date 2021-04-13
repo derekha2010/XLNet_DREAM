@@ -159,149 +159,6 @@ class RaceProcessor(DataProcessor):
                         label=truth))
         return examples
 
-class SwagProcessor(DataProcessor):
-    """Processor for the SWAG data set."""
-
-    def get_train_examples(self, data_dir):
-        """See base class."""
-        logger.info("LOOKING AT {} train".format(data_dir))
-        return self._create_examples(self._read_csv(os.path.join(data_dir, "train.csv")), "train")
-
-    def get_dev_examples(self, data_dir):
-        """See base class."""
-        logger.info("LOOKING AT {} dev".format(data_dir))
-        return self._create_examples(self._read_csv(os.path.join(data_dir, "val.csv")), "dev")
-
-    def get_test_examples(self, data_dir):
-        """See base class."""
-        logger.info("LOOKING AT {} dev".format(data_dir))
-        raise ValueError(
-            "For swag testing, the input file does not contain a label column. It can not be tested in current code"
-            "setting!"
-        )
-        return self._create_examples(self._read_csv(os.path.join(data_dir, "test.csv")), "test")
-    def get_labels(self):
-        """See base class."""
-        return ["0", "1", "2", "3"]
-
-    def _read_csv(self, input_file):
-        with open(input_file, 'r', encoding='utf-8') as f:
-            reader = csv.reader(f)
-            lines = []
-            for line in reader:
-                if sys.version_info[0] == 2:
-                    line = list(unicode(cell, 'utf-8') for cell in line)
-                lines.append(line)
-            return lines
-
-
-    def _create_examples(self, lines: List[List[str]], type: str):
-        """Creates examples for the training and dev sets."""
-        if type == "train" and lines[0][-1] != 'label':
-            raise ValueError(
-                "For training, the input file must contain a label column."
-            )
-
-        examples = [
-            InputExample(
-                example_id=line[2],
-                question=line[5],  # in the swag dataset, the
-                # common beginning of each
-                # choice is stored in "sent2".
-                contexts = [line[4], line[4], line[4], line[4]],
-                endings = [line[7], line[8], line[9], line[10]],
-                label=line[11]
-            ) for line in lines[1:]  # we skip the line with the column names
-        ]
-
-        return examples
-
-
-class ArcProcessor(DataProcessor):
-    """Processor for the ARC data set (request from allennlp)."""
-
-    def get_train_examples(self, data_dir):
-        """See base class."""
-        logger.info("LOOKING AT {} train".format(data_dir))
-        return self._create_examples(self._read_json(os.path.join(data_dir, "train.jsonl")), "train")
-
-    def get_dev_examples(self, data_dir):
-        """See base class."""
-        logger.info("LOOKING AT {} dev".format(data_dir))
-        return self._create_examples(self._read_json(os.path.join(data_dir, "dev.jsonl")), "dev")
-
-    def get_test_examples(self, data_dir):
-        logger.info("LOOKING AT {} test".format(data_dir))
-        return self._create_examples(self._read_json(os.path.join(data_dir, "test.jsonl")), "test")
-
-    def get_labels(self):
-        """See base class."""
-        return ["0", "1", "2", "3"]
-
-    def _read_json(self, input_file):
-        with open(input_file, 'r', encoding='utf-8') as fin:
-            lines = fin.readlines()
-            return lines
-
-
-    def _create_examples(self, lines, type):
-        """Creates examples for the training and dev sets."""
-
-        #There are two types of labels. They should be normalized
-        def normalize(truth):
-            if truth in "ABCD":
-                return ord(truth) - ord("A")
-            elif truth in "1234":
-                return int(truth) - 1
-            else:
-                logger.info("truth ERROR! %s", str(truth))
-                return None
-
-        examples = []
-        three_choice = 0
-        four_choice = 0
-        five_choice = 0
-        other_choices = 0
-        # we deleted example which has more than or less than four choices
-        for line in tqdm.tqdm(lines, desc="read arc data"):
-            data_raw = json.loads(line.strip("\n"))
-            if len(data_raw["question"]["choices"]) == 3:
-                three_choice += 1
-                continue
-            elif len(data_raw["question"]["choices"]) == 5:
-                five_choice += 1
-                continue
-            elif len(data_raw["question"]["choices"]) != 4:
-                other_choices += 1
-                continue
-            four_choice += 1
-            truth = str(normalize(data_raw["answerKey"]))
-            assert truth != "None"
-            question_choices = data_raw["question"]
-            question = question_choices["stem"]
-            id = data_raw["id"]
-            options = question_choices["choices"]
-            if len(options) == 4:
-                examples.append(
-                    InputExample(
-                        example_id = id,
-                        question=question,
-                        contexts=[options[0]["para"].replace("_", ""), options[1]["para"].replace("_", ""),
-                                  options[2]["para"].replace("_", ""), options[3]["para"].replace("_", "")],
-                        endings=[options[0]["text"], options[1]["text"], options[2]["text"], options[3]["text"]],
-                        label=truth))
-
-        if type == "train":
-            assert len(examples) > 1
-            assert examples[0].label is not None
-        logger.info("len examples: %s}", str(len(examples)))
-        logger.info("Three choices: %s", str(three_choice))
-        logger.info("Five choices: %s", str(five_choice))
-        logger.info("Other choices: %s", str(other_choices))
-        logger.info("four choices: %s", str(four_choice))
-
-        return examples
-
 class DreamProcessor(DataProcessor):
     def __init__(self):
         random.seed(random_seed)
@@ -554,24 +411,16 @@ def convert_examples_to_features(
 
     return features
 
-
-
-
 processors = {
     "mc160": MC160Processor,
     "mc500": MC500Processor,
     "dream": DreamProcessor,
-    "race": RaceProcessor,
-    "swag": SwagProcessor,
-    "arc": ArcProcessor
+    "race": RaceProcessor
 }
-
 
 MULTIPLE_CHOICE_TASKS_NUM_LABELS = {
     "mc160", 4,
     "mc500", 4,
     "dream", 3,
-    "race", 4,
-    "swag", 4,
-    "arc", 4
+    "race", 4
 }
