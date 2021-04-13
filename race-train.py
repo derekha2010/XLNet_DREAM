@@ -107,13 +107,19 @@ def main():
     
     model = XLNetForMultipleChoice.from_pretrained('xlnet-base-cased')
     model.to(device)
+    tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
+    
     no_decay = ['bias', 'LayerNorm.weight']
     ## note: no weight decay according to XLNet paper 
     optimizer_grouped_parameters = [
         {'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)], 'weight_decay': 0.0},
         {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
         ]
-
+    optimizer = AdamW(optimizer_grouped_parameters,
+                        lr=learning_rate,
+                        eps=1e-6)
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=num_warmup_steps, num_training_steps=num_train_steps)
+    
     train_data = load_and_cache_examples('data/race', 'race', tokenizer)
     train_sampler = RandomSampler(train_data)
     train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=train_batch_size)
@@ -124,8 +130,9 @@ def main():
     logger.info("  Num steps = %d", num_train_steps)
     
     global_step = 0
-    model.train()
+
     for ep in range(int(num_train_epochs)):
+        model.train()
         max_score = 0 
         tr_loss = 0
         nb_tr_examples, nb_tr_steps = 0, 0
@@ -150,7 +157,7 @@ def main():
             if step%800 == 0:
                 logger.info("Training loss: {}, global step: {}".format(tr_loss/nb_tr_steps, global_step))
                 
-        eval_data = load_and_cache_examples('data/race', 'race', tokenizer)
+        eval_data = load_and_cache_examples('data/race', 'race', tokenizer, evaluate=True)
         eval_sampler = SequentialSampler(eval_data)
         eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=eval_batch_size)
 
