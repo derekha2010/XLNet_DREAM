@@ -118,12 +118,14 @@ def main():
     optimizer = AdamW(optimizer_grouped_parameters,
                         lr=learning_rate,
                         eps=1e-6)
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=num_warmup_steps, num_training_steps=num_train_steps)
-    
+
     train_data = load_and_cache_examples('data/race', 'race', tokenizer)
     train_sampler = RandomSampler(train_data)
     train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=train_batch_size)
-        
+    
+    num_train_steps = len(train_dataloader) // gradient_accumulation_steps * num_train_epochs
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=num_warmup_steps, num_training_steps=num_train_steps)
+    
     logger.info("***** Running training *****")
     logger.info("  Num examples = %d", len(train_examples))
     logger.info("  Batch size = %d", train_batch_size)
