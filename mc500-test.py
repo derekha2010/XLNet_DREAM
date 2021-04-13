@@ -28,7 +28,7 @@ random_seed = 42
 
 data_path='datasets/MCTest'
 output_dir='model-mc500'
-output_model_file = 'trained/mc500_xlnet-base-cased_len512_58.bin'
+output_model_file = 'trained/mc500_xlnet-base-cased_len512_75.bin'
 
 def accuracy(out, labels):
     outputs = np.argmax(out, axis=1)

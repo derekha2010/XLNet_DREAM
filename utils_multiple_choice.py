@@ -229,7 +229,7 @@ class MC160Processor(DataProcessor):
 
     def get_test_examples(self, data_dir):
         """See base class."""
-        logger.info("LOOKING AT {} dev".format(data_dir))
+        logger.info("LOOKING AT {} test".format(data_dir))
         return self._create_examples(self._read_csv(os.path.join(data_dir, "MCTest/mc160.test.tsv")), self._read_csv(os.path.join(data_dir, "MCTestAnswers/mc160.test.ans")), "test")
         
     def get_labels(self):
@@ -284,7 +284,7 @@ class MC500Processor(DataProcessor):
 
     def get_test_examples(self, data_dir):
         """See base class."""
-        logger.info("LOOKING AT {} dev".format(data_dir))
+        logger.info("LOOKING AT {} test".format(data_dir))
         return self._create_examples(self._read_csv(os.path.join(data_dir, "MCTest/mc500.test.tsv")), self._read_csv(os.path.join(data_dir, "MCTestAnswers/mc500.test.ans")), "test")
         
     def get_labels(self):

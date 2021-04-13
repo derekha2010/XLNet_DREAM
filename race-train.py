@@ -20,15 +20,15 @@ logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(messa
 logger = logging.getLogger(__name__)
 
 train_batch_size = 1
-gradient_accumulation_steps = 1
+gradient_accumulation_steps = 1024
 num_train_epochs = 1
 num_warmup_steps = 120
-max_seq_length = 512
+max_seq_length = 256
 eval_batch_size = 1
-learning_rate = 1e-5
+learning_rate = 2e-5
 random_seed = 42
 
-output_dir='model'
+output_dir='model-race'
 #train_batch_size = train_batch_size // gradient_accumulation_steps
 
 def accuracy(out, labels):
