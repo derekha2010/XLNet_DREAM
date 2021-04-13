@@ -166,7 +166,7 @@ class DreamProcessor(DataProcessor):
 
         for sid in range(3):
             ## Note: assuming data folder stored in the same directory 
-            with open(["data/train.json", "data/dev.json", "data/test.json"][sid], "r") as f:
+            with open(["datasets/DREAM/train.json", "datasets/DREAM/dev.json", "datasets/DREAM/test.json"][sid], "r") as f:
                 data = json.load(f)
                 if sid == 0:
                     random.shuffle(data)

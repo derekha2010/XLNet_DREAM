@@ -27,6 +27,7 @@ learning_rate = 1e-5
 random_seed = 42
 
 data_path='data/MCTest'
+output_dir='model-mc160'
 output_model_file = 'pretrained/mctest160.bin'
 
 def accuracy(out, labels):
