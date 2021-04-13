@@ -12,6 +12,8 @@ import json
 import logging
 import numpy as np
 
+# http://www.cs.cmu.edu/~glai1/data/race/RACE.tar.gz
+
 logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s', 
                     datefmt = '%m/%d/%Y %H:%M:%S',
                     level = logging.INFO)
@@ -185,6 +187,13 @@ def main():
         logger.info("***** Eval results *****")
         for key in sorted(result.keys()):
             logger.info("  %s = %s", key, str(result[key]))
+
+        output_eval_file = os.path.join(args.output_dir, "results.txt")
+        with open(output_eval_file, "a+") as writer:
+            writer.write(" Epoch: "+str(ep+1))
+            for key in sorted(result.keys()):
+                writer.write("%s = %s\n" % (key, str(result[key])))
+                        
         model_to_save = model.module if hasattr(model, 'module') else model  # Only save the model it-self
         output_model_file = os.path.join(output_dir, "pytorch_model_{}epoch.bin".format(ep+1))
         torch.save(model_to_save.state_dict(), output_model_file)
