@@ -20,7 +20,7 @@ logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(messa
 logger = logging.getLogger(__name__)
 
 train_batch_size = 1
-gradient_accumulation_steps = 1024
+gradient_accumulation_steps = 192
 num_train_epochs = 1
 num_warmup_steps = 120
 max_seq_length = 256
