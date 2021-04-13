@@ -28,7 +28,7 @@ learning_rate = 1e-5
 random_seed = 42
 
 output_dir='model'
-train_batch_size = train_batch_size // gradient_accumulation_steps
+#train_batch_size = train_batch_size // gradient_accumulation_steps
 
 def accuracy(out, labels):
     outputs = np.argmax(out, axis=1)
@@ -70,7 +70,7 @@ def main():
     label_list = processor.get_labels()
     train_examples = processor.get_train_examples('')
     num_train_steps = int(
-                len(train_examples) / n_class / train_batch_size / gradient_accumulation_steps * num_train_epochs)
+                len(train_examples) // gradient_accumulation_steps * num_train_epochs)
     
     optimizer = AdamW(optimizer_grouped_parameters,
                         lr=learning_rate,
