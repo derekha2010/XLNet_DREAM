@@ -305,7 +305,7 @@ class MC500Processor(DataProcessor):
     def _create_examples(self, lines: List[List[str]], ans_lines: List[List[str]], type: str):
         """Creates examples for the training and dev sets."""
         examples = []
-        for i in range(lines):
+        for i in range(len(lines)):
             line = lines[i]
             ans_line = ans_lines[i]
             for j in range(4):
