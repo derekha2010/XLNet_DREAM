@@ -356,6 +356,118 @@ class DreamProcessor(DataProcessor):
             examples.append(
                     InputExample(example_id=guid, question=data[i][1], contexts=[data[i][0],data[i][0],data[i][0]], endings=[data[i][2],data[i][3],data[i][4]], label=label))
         return examples
+
+class MC160Processor(DataProcessor):
+    """Processor for the SWAG data set."""
+
+    def get_train_examples(self, data_dir):
+        """See base class."""
+        logger.info("LOOKING AT {} train".format(data_dir))
+        return self._create_examples(self._read_csv(os.path.join(data_dir, "MCTest/mc160.train.tsv")), self._read_csv(os.path.join(data_dir, "MCTest/mc160.train.ans")), "train")
+
+    def get_dev_examples(self, data_dir):
+        """See base class."""
+        logger.info("LOOKING AT {} dev".format(data_dir))
+        return self._create_examples(self._read_csv(os.path.join(data_dir, "MCTest/mc160.dev.tsv")), self._read_csv(os.path.join(data_dir, "MCTest/mc160.dev.ans")), "dev")
+
+    def get_test_examples(self, data_dir):
+        """See base class."""
+        logger.info("LOOKING AT {} dev".format(data_dir))
+        return self._create_examples(self._read_csv(os.path.join(data_dir, "MCTest/mc160.test.tsv")), self._read_csv(os.path.join(data_dir, "MCTestAnswers/mc160.test.ans")), "test")
+        
+    def get_labels(self):
+        """See base class."""
+        return ["0", "1", "2", "3"]
+
+    def _read_csv(self, input_file):
+        with open(input_file, 'r', encoding='utf-8') as f:
+            reader = csv.reader(f, delimiter='\t')
+            lines = []
+            for line in reader:
+                if sys.version_info[0] == 2:
+                    line = list(unicode(cell, 'utf-8') for cell in line)
+                lines.append(line)
+            return lines
+
+
+    def _create_examples(self, lines: List[List[str]], ans_lines: List[List[str]], type: str):
+        """Creates examples for the training and dev sets."""
+        examples = []
+        print('line length:',len(lines),len(ans_lines))
+        print('line0:',lines[0],ans_lines[0])
+        for i in range(len(lines)):
+            line = lines[i]
+            ans_line = ans_lines[i]
+            for j in range(4):
+                guid = "%s-%s" % (line[0], j)
+                examples.append(
+                    InputExample(
+                        example_id=guid,
+                        question=line[3+j*5],  # in the swag dataset, the
+                        # common beginning of each
+                        # choice is stored in "sent2".
+                        contexts = [line[2], line[2], line[2], line[2]],
+                        endings = [line[3+j*5+1], line[3+j*5+2], line[3+j*5+3], line[3+j*5+4]],
+                        label= str(ord(ans_line[j]) - ord("A"))
+                    )
+                )
+
+        return examples
+
+class MC500Processor(DataProcessor):
+    """Processor for the SWAG data set."""
+
+    def get_train_examples(self, data_dir):
+        """See base class."""
+        logger.info("LOOKING AT {} train".format(data_dir))
+        return self._create_examples(self._read_csv(os.path.join(data_dir, "MCTest/mc500.train.tsv")), self._read_csv(os.path.join(data_dir, "MCTest/mc500.train.ans")), "train")
+
+    def get_dev_examples(self, data_dir):
+        """See base class."""
+        logger.info("LOOKING AT {} dev".format(data_dir))
+        return self._create_examples(self._read_csv(os.path.join(data_dir, "MCTest/mc500.dev.tsv")), self._read_csv(os.path.join(data_dir, "MCTest/mc500.dev.ans")), "dev")
+
+    def get_test_examples(self, data_dir):
+        """See base class."""
+        logger.info("LOOKING AT {} dev".format(data_dir))
+        return self._create_examples(self._read_csv(os.path.join(data_dir, "MCTest/mc500.test.tsv")), self._read_csv(os.path.join(data_dir, "MCTestAnswers/mc500.test.ans")), "test")
+        
+    def get_labels(self):
+        """See base class."""
+        return ["0", "1", "2", "3"]
+
+    def _read_csv(self, input_file):
+        with open(input_file, 'r', encoding='utf-8') as f:
+            reader = csv.reader(f, delimiter='\t')
+            lines = []
+            for line in reader:
+                if sys.version_info[0] == 2:
+                    line = list(unicode(cell, 'utf-8') for cell in line)
+                lines.append(line)
+            return lines
+
+
+    def _create_examples(self, lines: List[List[str]], ans_lines: List[List[str]], type: str):
+        """Creates examples for the training and dev sets."""
+        examples = []
+        for i in range(lines):
+            line = lines[i]
+            ans_line = ans_lines[i]
+            for j in range(4):
+                guid = "%s-%s" % (line[0], j)
+                examples.append(
+                    InputExample(
+                        example_id=guid,
+                        question=line[3+j*5],  # in the swag dataset, the
+                        # common beginning of each
+                        # choice is stored in "sent2".
+                        contexts = [line[2], line[2], line[2], line[2]],
+                        endings = [line[3+j*5+1], line[3+j*5+2], line[3+j*5+3], line[3+j*5+4]],
+                        label= str(ord(ans_line[j]) - ord("A"))
+                    )
+                )
+
+        return examples
         
 def convert_examples_to_features(
     examples: List[InputExample],
@@ -446,6 +558,8 @@ def convert_examples_to_features(
 
 
 processors = {
+    "mc160": MC160Processor,
+    "mc500": MC500Processor,
     "dream": DreamProcessor,
     "race": RaceProcessor,
     "swag": SwagProcessor,
@@ -454,6 +568,8 @@ processors = {
 
 
 MULTIPLE_CHOICE_TASKS_NUM_LABELS = {
+    "mc160", 4,
+    "mc500", 4,
     "dream", 3,
     "race", 4,
     "swag", 4,
