@@ -26,6 +26,8 @@ max_seq_length = 256
 eval_batch_size = 1
 learning_rate = 1e-5
 random_seed = 42
+
+output_dir='model-dream'
 output_model_file = 'pretrained/dream_xlnet-large-cased_256_71.bin'
 
 def accuracy(out, labels):

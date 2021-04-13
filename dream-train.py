@@ -27,7 +27,7 @@ eval_batch_size = 1
 learning_rate = 1e-5
 random_seed = 42
 
-output_dir='model'
+output_dir='model-dream'
 #train_batch_size = train_batch_size // gradient_accumulation_steps
 
 def accuracy(out, labels):
