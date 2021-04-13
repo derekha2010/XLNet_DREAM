@@ -28,6 +28,7 @@ eval_batch_size = 1
 learning_rate = 2e-5
 random_seed = 42
 
+data_path='datasets/RACE'
 output_dir='model-race'
 #train_batch_size = train_batch_size // gradient_accumulation_steps
 
@@ -119,7 +120,7 @@ def main():
                         lr=learning_rate,
                         eps=1e-6)
 
-    train_data = load_and_cache_examples('data/race', 'race', tokenizer)
+    train_data = load_and_cache_examples(data_path, 'race', tokenizer)
     train_sampler = RandomSampler(train_data)
     train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=train_batch_size)
     
@@ -159,7 +160,7 @@ def main():
             if step%800 == 0:
                 logger.info("Training loss: {}, global step: {}".format(tr_loss/nb_tr_steps, global_step))
                 
-        eval_data = load_and_cache_examples('data/race', 'race', tokenizer, evaluate=True)
+        eval_data = load_and_cache_examples(data_path, 'race', tokenizer, evaluate=True)
         eval_sampler = SequentialSampler(eval_data)
         eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=eval_batch_size)
         
@@ -205,7 +206,7 @@ def main():
         for key in sorted(result.keys()):
             logger.info("  %s = %s", key, str(result[key]))
 
-        output_eval_file = os.path.join(args.output_dir, "results.txt")
+        output_eval_file = os.path.join(output_dir, "results.txt")
         with open(output_eval_file, "a+") as writer:
             writer.write(" Epoch: "+str(ep+1))
             for key in sorted(result.keys()):
