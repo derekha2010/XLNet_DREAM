@@ -56,7 +56,7 @@ def main():
 
     os.makedirs(output_dir, exist_ok=True)
     
-    model = XLNetForMultipleChoice.from_pretrained('xlnet-base-cased')
+    model = XLNetForMultipleChoice.from_pretrained('xlnet-large-cased')
     model.to(device)
     no_decay = ['bias', 'LayerNorm.weight']
     ## note: no weight decay according to XLNet paper 
@@ -65,7 +65,7 @@ def main():
         {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
         ]
 
-    tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
+    tokenizer = XLNetTokenizer.from_pretrained('xlnet-large-cased')
     processor = processors['dream']()
     label_list = processor.get_labels()
     train_examples = processor.get_train_examples('')
@@ -186,6 +186,13 @@ def main():
         logger.info("***** Eval results *****")
         for key in sorted(result.keys()):
             logger.info("  %s = %s", key, str(result[key]))
+
+        output_eval_file = os.path.join(args.output_dir, "results.txt")
+        with open(output_eval_file, "a+") as writer:
+            writer.write(" Epoch: "+str(ep+1))
+            for key in sorted(result.keys()):
+                writer.write("%s = %s\n" % (key, str(result[key])))
+                
         model_to_save = model.module if hasattr(model, 'module') else model  # Only save the model it-self
         output_model_file = os.path.join(output_dir, "pytorch_model_{}epoch.bin".format(ep+1))
         torch.save(model_to_save.state_dict(), output_model_file)

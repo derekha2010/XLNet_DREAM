@@ -24,7 +24,7 @@ max_seq_length = 256
 eval_batch_size = 1
 learning_rate = 1e-5
 random_seed = 42
-output_model_file = 'model/pytorch_model_4epoch.bin'
+output_model_file = 'model/pytorch_model_3epoch.bin'
 
 def accuracy(out, labels):
     outputs = np.argmax(out, axis=1)
@@ -51,7 +51,7 @@ def main():
         torch.cuda.manual_seed_all(random_seed)
 
     model_state_dict = torch.load(output_model_file, map_location=device)
-    model = XLNetForMultipleChoice.from_pretrained('xlnet-base-cased', state_dict=model_state_dict)
+    model = XLNetForMultipleChoice.from_pretrained('xlnet-large-cased', state_dict=model_state_dict)
     logger.info("Trained model: {} loaded.".format(output_model_file))
 
     model.to(device)
@@ -62,7 +62,7 @@ def main():
         {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
         ]
 
-    tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
+    tokenizer = XLNetTokenizer.from_pretrained('xlnet-large-cased')
     processor = processors['dream']()
     label_list = processor.get_labels()
 
@@ -124,6 +124,10 @@ def main():
     logger.info("***** Eval results *****")
     for key in sorted(result.keys()):
         logger.info("  %s = %s", key, str(result[key]))
-        
+        output_eval_file = os.path.join(args.output_dir, "results.txt")
+    with open(output_eval_file, "a+") as writer:
+        writer.write(" Epoch: "+str(ep+1))
+        for key in sorted(result.keys()):
+            writer.write("%s = %s\n" % (key, str(result[key])))
 if __name__ == "__main__":
     main()
