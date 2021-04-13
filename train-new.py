@@ -18,7 +18,7 @@ logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(messa
 logger = logging.getLogger(__name__)
 
 n_class = 3
-train_batch_size = 32
+train_batch_size = 1
 gradient_accumulation_steps = 32
 num_train_epochs = 4
 num_warmup_steps = 120
@@ -187,7 +187,7 @@ def main():
         for key in sorted(result.keys()):
             logger.info("  %s = %s", key, str(result[key]))
 
-        output_eval_file = os.path.join(args.output_dir, "results.txt")
+        output_eval_file = os.path.join(output_dir, "results.txt")
         with open(output_eval_file, "a+") as writer:
             writer.write(" Epoch: "+str(ep+1))
             for key in sorted(result.keys()):
