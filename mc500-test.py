@@ -27,8 +27,8 @@ learning_rate = 1e-5
 random_seed = 42
 
 data_path='datasets/MCTest'
-output_dir='model-mc160'
-output_model_file = 'trained/mc160_xlnet-base-cased_len512_58.bin'
+output_dir='model-mc500'
+output_model_file = 'trained/mc500_xlnet-base-cased_len512_58.bin'
 
 def accuracy(out, labels):
     outputs = np.argmax(out, axis=1)
@@ -109,7 +109,7 @@ def main():
     model.to(device)
     tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
     
-    eval_data = load_and_cache_examples(data_path, 'mc160', tokenizer, test=True)
+    eval_data = load_and_cache_examples(data_path, 'mc500', tokenizer, test=True)
     eval_sampler = SequentialSampler(eval_data)
     eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=eval_batch_size)
     

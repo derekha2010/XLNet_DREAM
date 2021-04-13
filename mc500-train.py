@@ -27,7 +27,7 @@ learning_rate = 1e-5
 random_seed = 42
 
 data_path='datasets/MCTest'
-output_dir='model-mc160'
+output_dir='model-mc500'
 #train_batch_size = train_batch_size // gradient_accumulation_steps
 
 def accuracy(out, labels):
@@ -118,7 +118,7 @@ def main():
                         lr=learning_rate,
                         eps=1e-6)
 
-    train_data = load_and_cache_examples(data_path, 'mc160', tokenizer)
+    train_data = load_and_cache_examples(data_path, 'mc500', tokenizer)
     train_sampler = RandomSampler(train_data)
     train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=train_batch_size)
     
@@ -158,7 +158,7 @@ def main():
             if step%800 == 0:
                 logger.info("Training loss: {}, global step: {}".format(tr_loss/nb_tr_steps, global_step))
                 
-        eval_data = load_and_cache_examples(data_path, 'mc160', tokenizer, evaluate=True)
+        eval_data = load_and_cache_examples(data_path, 'mc500', tokenizer, evaluate=True)
         eval_sampler = SequentialSampler(eval_data)
         eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=eval_batch_size)
         
