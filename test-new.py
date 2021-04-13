@@ -2,6 +2,7 @@
 #!pip install sentencepiece
 from transformers import XLNetTokenizer, XLNetForMultipleChoice
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
+from utils_multiple_choice import (convert_examples_to_features, processors)
 
 import torch
 import random
