@@ -146,7 +146,7 @@ def main():
     eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=eval_batch_size)
     
     logger.info("***** Running Evaluation *****")
-    logger.info("  Num examples = %d", len(eval_dataloader))
+    logger.info("  Num examples = %d", len(eval_data))
     logger.info("  Batch size = %d", eval_batch_size)
     model.eval()
     eval_loss, eval_accuracy = 0, 0
@@ -184,6 +184,7 @@ def main():
 
     output_eval_file = os.path.join(output_dir, "{}_{}_{}_results.txt".format(args.dataset, args.model, max_seq_length))
     with open(output_eval_file, "a+") as writer:
+        writer.write("Test:\n")
         for key in sorted(result.keys()):
             writer.write("%s = %s\n" % (key, str(result[key])))
 

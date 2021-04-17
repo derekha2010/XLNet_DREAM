@@ -160,42 +160,39 @@ class RaceProcessor(DataProcessor):
         return examples
 
 class DreamProcessor(DataProcessor):
-    def __init__(self):
-        random.seed(random_seed)
-        self.D = [[], [], []]
-
-        for sid in range(3):
-            ## Note: assuming data folder stored in the same directory 
-            with open(["datasets/DREAM/train.json", "datasets/DREAM/dev.json", "datasets/DREAM/test.json"][sid], "r") as f:
-                data = json.load(f)
-                if sid == 0:
-                    random.shuffle(data)
-                for i in range(len(data)):
-                    for j in range(len(data[i][1])):
-                        # shouldn't do lower case, since we are using cased model                         
-                        # d = ['\n'.join(data[i][0]).lower(), data[i][1][j]["question"].lower()]
-                        d = ['\n'.join(data[i][0]), data[i][1][j]["question"]]
-                        for k in range(len(data[i][1][j]["choice"])):
-                            # d += [data[i][1][j]["choice"][k].lower()]
-                            d += [data[i][1][j]["choice"][k]]
-                        # d += [data[i][1][j]["answer"].lower()] 
-                        d += [data[i][1][j]["answer"]] 
-                        self.D[sid] += [d]
+    def get_file(self, file_path, ramdom=False):
+        D = []
+        with open(file_path, "r") as f:
+            data = json.load(f)
+            if ramdom:
+                random.seed(random_seed)
+                random.shuffle(data)
+            for i in range(len(data)):
+                for j in range(len(data[i][1])):
+                    # shouldn't do lower case, since we are using cased model                         
+                    # d = ['\n'.join(data[i][0]).lower(), data[i][1][j]["question"].lower()]
+                    d = ['\n'.join(data[i][0]), data[i][1][j]["question"]]
+                    for k in range(len(data[i][1][j]["choice"])):
+                        # d += [data[i][1][j]["choice"][k].lower()]
+                        d += [data[i][1][j]["choice"][k]]
+                    # d += [data[i][1][j]["answer"].lower()] 
+                    d += [data[i][1][j]["answer"]] 
+                    D += [d]
+        return D
         
     def get_train_examples(self, data_dir):
-        """See base class."""
         return self._create_examples(
-                self.D[0], "train")
+                get_file(os.path.join(data_dir, 'train.json'), random=True), "train")
 
     def get_test_examples(self, data_dir):
         """See base class."""
         return self._create_examples(
-                self.D[2], "test")
+                get_file(os.path.join(data_dir, 'test.json')), "test")
 
     def get_dev_examples(self, data_dir):
         """See base class."""
         return self._create_examples(
-                self.D[1], "dev")
+                get_file(os.path.join(data_dir, 'dev.json')), "dev")
 
     def get_labels(self):
         """See base class."""

@@ -1,5 +1,5 @@
-#!pip install transformers
 #!pip install sentencepiece
+#!pip install transformers
 from transformers import XLNetTokenizer, XLNetForMultipleChoice
 from transformers.optimization import AdamW, get_linear_schedule_with_warmup
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 train_batch_size = 1
 #gradient_accumulation_steps = 1
-num_train_epochs = 5
+#num_train_epochs = 5
 #num_warmup_steps = 0
 #max_seq_length = 512
 eval_batch_size = 1
@@ -122,19 +122,26 @@ def main():
                         type=str,
                         required=True,
                         help="dataset")
+    parser.add_argument("--epochs",
+                        default=5,
+                        type=int,
+                        required=False,
+                        help="Epochs")     
                         
     args = parser.parse_args()
     global max_seq_length
     max_seq_length = args.seq_length
-    gradient_accumulation_steps = args.batch_size
+
+    global num_train_epochs
+    num_train_epochs = args.epochs
     
-    #global output_dir
     output_dir='model-'+args.dataset
     data_path=dataset_map[args.dataset]
+    gradient_accumulation_steps = args.batch_size
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     n_gpu = torch.cuda.device_count()
-    print('gpu count:', n_gpu)
+    logger.info('gpu count:', n_gpu)
     
     random.seed(random_seed)
     np.random.seed(random_seed)
@@ -208,7 +215,7 @@ def main():
         eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=eval_batch_size)
         
         logger.info("***** Running Dev Evaluation *****")
-        logger.info("  Num examples = %d", len(eval_dataloader))
+        logger.info("  Num examples = %d", len(eval_data))
         logger.info("  Batch size = %d", eval_batch_size)
         model.eval()
         eval_loss, eval_accuracy = 0, 0
@@ -253,8 +260,56 @@ def main():
                 writer.write("%s = %s\n" % (key, str(result[key])))
             writer.write("\n")
         model_to_save = model.module if hasattr(model, 'module') else model  # Only save the model it-self
-        output_model_file = os.path.join(output_dir, "{}_{}_{}_epoch{}_{}.bin".format(args.dataset, args.model, max_seq_length, ep+1, int(eval_accuracy)))
+        output_model_file = os.path.join(output_dir, "{}_{}_{}_epoch{}_{}.bin".format(args.dataset, args.model, max_seq_length, ep+1, int(eval_accuracy*100)))
         torch.save(model_to_save.state_dict(), output_model_file)
+
+    # testdata
+    test_data = load_and_cache_examples(data_path, args.dataset, args.model, tokenizer, test=True)
+    test_sampler = SequentialSampler(eval_data)
+    test_dataloader = DataLoader(eval_data, sampler=test_sampler, batch_size=eval_batch_size)
+    
+    logger.info("***** Running Test Evaluation *****")
+    logger.info("  Num examples = %d", len(test_data))
+    logger.info("  Batch size = %d", eval_batch_size)
+    model.eval()
+    test_loss, test_accuracy = 0, 0
+    nb_test_steps, nb_test_examples = 0, 0
+
+    for input_ids, input_mask, segment_ids, label_ids in test_dataloader:
+        input_ids = input_ids.to(device)
+        input_mask = input_mask.to(device)
+        segment_ids = segment_ids.to(device)
+        label_ids = label_ids.to(device)
+
+        with torch.no_grad():
+            eval_output = model(input_ids=input_ids, token_type_ids=segment_ids, attention_mask=input_mask, labels=label_ids)
+        tmp_eval_loss = eval_output.loss
+        logits = eval_output.logits
+        logits = logits.detach().cpu().numpy()
+        label_ids = label_ids.to('cpu').numpy()
+        
+        tmp_eval_accuracy = accuracy(logits, label_ids.reshape(-1))
+
+        eval_loss += tmp_eval_loss.mean().item()
+        eval_accuracy += tmp_eval_accuracy
+
+        nb_eval_examples += input_ids.size(0)
+        nb_eval_steps += 1
+
+    eval_loss = eval_loss / nb_eval_steps
+    eval_accuracy = eval_accuracy / nb_eval_examples
+
+    result = {'eval_loss': eval_loss,
+              'eval_accuracy': eval_accuracy}
+    logger.info("***** Eval results *****")
+    for key in sorted(result.keys()):
+        logger.info("  %s = %s", key, str(result[key]))
+
+    output_eval_file = os.path.join(output_dir, "{}_{}_{}_results.txt".format(args.dataset, args.model, max_seq_length))
+    with open(output_eval_file, "a+") as writer:
+        writer.write("Test:\n")
+        for key in sorted(result.keys()):
+            writer.write("%s = %s\n" % (key, str(result[key])))
         
 if __name__ == "__main__":
     main()
