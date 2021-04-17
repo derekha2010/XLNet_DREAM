@@ -182,17 +182,17 @@ class DreamProcessor(DataProcessor):
         
     def get_train_examples(self, data_dir):
         return self._create_examples(
-                get_file(os.path.join(data_dir, 'train.json'), random=True), "train")
+                self.get_file(os.path.join(data_dir, 'train.json'), random=True), "train")
 
     def get_test_examples(self, data_dir):
         """See base class."""
         return self._create_examples(
-                get_file(os.path.join(data_dir, 'test.json')), "test")
+                self.get_file(os.path.join(data_dir, 'test.json')), "test")
 
     def get_dev_examples(self, data_dir):
         """See base class."""
         return self._create_examples(
-                get_file(os.path.join(data_dir, 'dev.json')), "dev")
+                self.get_file(os.path.join(data_dir, 'dev.json')), "dev")
 
     def get_labels(self):
         """See base class."""
