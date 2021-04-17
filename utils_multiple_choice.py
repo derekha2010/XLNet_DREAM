@@ -160,7 +160,7 @@ class RaceProcessor(DataProcessor):
         return examples
 
 class DreamProcessor(DataProcessor):
-    def get_file(self, file_path, ramdom=False):
+    def get_file(self, file_path, random=False):
         D = []
         with open(file_path, "r") as f:
             data = json.load(f)
