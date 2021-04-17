@@ -160,11 +160,11 @@ class RaceProcessor(DataProcessor):
         return examples
 
 class DreamProcessor(DataProcessor):
-    def get_file(self, file_path, random=False):
+    def get_file(self, file_path, randomData=False):
         D = []
         with open(file_path, "r") as f:
             data = json.load(f)
-            if ramdom:
+            if randomData:
                 random.seed(random_seed)
                 random.shuffle(data)
             for i in range(len(data)):
@@ -182,7 +182,7 @@ class DreamProcessor(DataProcessor):
         
     def get_train_examples(self, data_dir):
         return self._create_examples(
-                self.get_file(os.path.join(data_dir, 'train.json'), random=True), "train")
+                self.get_file(os.path.join(data_dir, 'train.json'), randomData=True), "train")
 
     def get_test_examples(self, data_dir):
         """See base class."""

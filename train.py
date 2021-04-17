@@ -152,7 +152,7 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
     if(args.model_file):
         model_state_dict = torch.load(args.model_file, map_location=device)
-        model = XLNetForMultipleChoice.from_pretrained('xlnet-large-cased', state_dict=model_state_dict)
+        model = XLNetForMultipleChoice.from_pretrained(args.model, state_dict=model_state_dict)
     else:
         model = XLNetForMultipleChoice.from_pretrained(args.model)
     model.to(device)
@@ -272,8 +272,8 @@ def main():
     logger.info("  Num examples = %d", len(test_data))
     logger.info("  Batch size = %d", eval_batch_size)
     model.eval()
-    test_loss, test_accuracy = 0, 0
-    nb_test_steps, nb_test_examples = 0, 0
+    eval_loss, eval_accuracy = 0, 0
+    nb_eval_steps, nb_eval_examples = 0, 0
 
     for input_ids, input_mask, segment_ids, label_ids in test_dataloader:
         input_ids = input_ids.to(device)
