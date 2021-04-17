@@ -141,7 +141,7 @@ def main():
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     n_gpu = torch.cuda.device_count()
-    logger.info('gpu count:', n_gpu)
+    logger.info('gpu count: %d', n_gpu)
     
     random.seed(random_seed)
     np.random.seed(random_seed)
