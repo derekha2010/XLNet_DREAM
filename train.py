@@ -152,9 +152,9 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
     if(args.model_file):
         model_state_dict = torch.load(args.model_file, map_location=device)
-        model = XLNetForMultipleChoice.from_pretrained(args.model, state_dict=model_state_dict)
+        model = XLNetForMultipleChoice.from_pretrained(args.model, state_dict=model_state_dict, dropout=0, summary_last_dropout=0)
     else:
-        model = XLNetForMultipleChoice.from_pretrained(args.model)
+        model = XLNetForMultipleChoice.from_pretrained(args.model, dropout=0, summary_last_dropout=0)
     model.to(device)
     tokenizer = XLNetTokenizer.from_pretrained(args.model)
     
@@ -173,7 +173,10 @@ def main():
     train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=train_batch_size)
     
     num_train_steps = len(train_dataloader) // gradient_accumulation_steps * num_train_epochs
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=num_train_steps//10, num_training_steps=num_train_steps)
+    num_warmup_steps = num_train_steps//10
+    logger.info("  Num warmup steps = %d", num_warmup_steps)
+    
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=num_warmup_steps, num_training_steps=num_train_steps)
     
     logger.info("***** Running training *****")
     logger.info("  Num examples = %d", len(train_data))
@@ -202,6 +205,7 @@ def main():
             nb_tr_steps += 1
             
             if (step + 1) % gradient_accumulation_steps == 0:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
                 optimizer.step()    # We have accumulated enought gradients
                 scheduler.step()
                 model.zero_grad()
@@ -265,8 +269,8 @@ def main():
 
     # testdata
     test_data = load_and_cache_examples(data_path, args.dataset, args.model, tokenizer, test=True)
-    test_sampler = SequentialSampler(eval_data)
-    test_dataloader = DataLoader(eval_data, sampler=test_sampler, batch_size=eval_batch_size)
+    test_sampler = SequentialSampler(test_data)
+    test_dataloader = DataLoader(test_data, sampler=test_sampler, batch_size=eval_batch_size)
     
     logger.info("***** Running Test Evaluation *****")
     logger.info("  Num examples = %d", len(test_data))

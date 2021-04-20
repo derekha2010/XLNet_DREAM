@@ -137,7 +137,7 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
     
     model_state_dict = torch.load(output_model_file, map_location=device)
-    model = XLNetForMultipleChoice.from_pretrained(args.model, state_dict=model_state_dict)
+    model = XLNetForMultipleChoice.from_pretrained(args.model, state_dict=model_state_dict, dropout=0, summary_last_dropout=0)
     model.to(device)
     tokenizer = XLNetTokenizer.from_pretrained(args.model)
     
