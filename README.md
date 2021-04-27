@@ -39,3 +39,6 @@ Other package:
 pip install sentencepiece
 pip install boto3
 ```
+
+Train: `python train.py --dataset=mc160 --model=xlnet-base-cased --seq_length=256 --batch_size=2 --epochs=4 --model_file=trained/race_xlnet-base-cased_len256_69.bin`
+Test: `python test.py --dataset=mc160 --model=xlnet-base-cased --seq_length=256 --model_file=trained/mc160_xlnet-base-cased_len256_76.bin`
