@@ -18,18 +18,15 @@ logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(messa
                     level = logging.INFO)
 logger = logging.getLogger(__name__)
 
+#gradient_accumulation_steps =
+#num_train_epochs =
+#num_warmup_steps =
+#max_seq_length =
 train_batch_size = 1
-#gradient_accumulation_steps = 1
-#num_train_epochs = 5
-#num_warmup_steps = 0
-#max_seq_length = 512
 eval_batch_size = 1
 learning_rate = 1e-5
 random_seed = 42
 
-#data_path='datasets/MCTest'
-#output_dir='model-mc500'
-#train_batch_size = train_batch_size // gradient_accumulation_steps
 dataset_map={'mc500':'datasets/MCTest', 'mc160':'datasets/MCTest','dream':'datasets/DREAM','race':'datasets/RACE'}
 
 def accuracy(out, labels):
@@ -154,6 +151,7 @@ def main():
         model_state_dict = torch.load(args.model_file, map_location=device)
         model = XLNetForMultipleChoice.from_pretrained(args.model, state_dict=model_state_dict, dropout=0, summary_last_dropout=0)
     else:
+        ## note: dropout rate set to zero, increased accuracy
         model = XLNetForMultipleChoice.from_pretrained(args.model, dropout=0, summary_last_dropout=0)
     model.to(device)
     tokenizer = XLNetTokenizer.from_pretrained(args.model)
@@ -164,6 +162,8 @@ def main():
         {'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)], 'weight_decay': 0.0},
         {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
         ]
+    
+    ## note: Adam epsilon used 1e-6
     optimizer = AdamW(optimizer_grouped_parameters,
                         lr=learning_rate,
                         eps=1e-6)
@@ -172,7 +172,10 @@ def main():
     train_sampler = RandomSampler(train_data)
     train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=train_batch_size)
     
+    ## note: Used gradient accumulation steps to simulate larger batch size
     num_train_steps = len(train_dataloader) // gradient_accumulation_steps * num_train_epochs
+    
+    ## note: Warmup proportion of 0.1
     num_warmup_steps = num_train_steps//10
     logger.info("  Num warmup steps = %d", num_warmup_steps)
     

@@ -1,5 +1,5 @@
-#!pip install transformers
 #!pip install sentencepiece
+#!pip install transformers
 from transformers import XLNetTokenizer, XLNetForMultipleChoice
 from transformers.optimization import AdamW, get_linear_schedule_with_warmup
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
@@ -18,17 +18,10 @@ logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(messa
                     level = logging.INFO)
 logger = logging.getLogger(__name__)
 
-#train_batch_size = 1
-#gradient_accumulation_steps = 1
-#num_train_epochs = 5
-#num_warmup_steps = 0
-#max_seq_length = 256
+#max_seq_length =
 eval_batch_size = 1
-#learning_rate = 1e-5
 random_seed = 42
 
-#data_path='datasets/MCTest'
-#output_dir='model-mc500'
 dataset_map={'mc500':'datasets/MCTest', 'mc160':'datasets/MCTest','dream':'datasets/DREAM','race':'datasets/RACE'}
 
 def accuracy(out, labels):

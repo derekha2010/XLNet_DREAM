@@ -169,13 +169,9 @@ class DreamProcessor(DataProcessor):
                 random.shuffle(data)
             for i in range(len(data)):
                 for j in range(len(data[i][1])):
-                    # shouldn't do lower case, since we are using cased model                         
-                    # d = ['\n'.join(data[i][0]).lower(), data[i][1][j]["question"].lower()]
                     d = ['\n'.join(data[i][0]), data[i][1][j]["question"]]
                     for k in range(len(data[i][1][j]["choice"])):
-                        # d += [data[i][1][j]["choice"][k].lower()]
                         d += [data[i][1][j]["choice"][k]]
-                    # d += [data[i][1][j]["answer"].lower()] 
                     d += [data[i][1][j]["answer"]] 
                     D += [d]
         return D
